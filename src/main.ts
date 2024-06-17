@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import VueRouter, { createRouter, createWebHashHistory } from 'vue-router'
 import Vue3Toastify, {type ToastContainerOptions} from 'vue3-toastify'
+import { createPinia } from 'pinia'
 import './style.css'
 import App from './App.vue'
 import routes from './routes'
@@ -26,7 +27,10 @@ const router = createRouter({
   routes,
 });
 
+const pinia = createPinia()
+
 createApp(App)
+  .use(pinia)
   .use(router)
   .use(Vue3Toastify, {
     autoClose: 3000,
