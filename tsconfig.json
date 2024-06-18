@@ -24,6 +24,6 @@
       "vue3-toastify/global"
     ]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "vite-env.d.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
