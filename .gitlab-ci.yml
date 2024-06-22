@@ -1,0 +1,52 @@
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH != "master" && $CI_PIPELINE_SOURCE != "merge_request_event"
+      when: never
+    - when: always
+
+stages:
+  - vitebuild
+  - build
+  - deploy
+
+variables:
+    IMAGE_TAG: 1.0
+
+build-image:
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  stage: build
+  before_script:
+    - echo "Docker registry url is $CI_REGISTRY"
+    - echo "Docker registry username is $CI_REGISTRY_USER"
+    - echo "Docker image repo is $CI_REGISTRY_IMAGE"
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - apk --update add nodejs npm
+  script:
+    - npm install
+    - npm run build
+    - docker build -t $CI_REGISTRY_IMAGE:$IMAGE_TAG .
+    - docker push $CI_REGISTRY_IMAGE:$IMAGE_TAG
+
+
+deploy-stage:
+  tags:
+    - shell
+  stage: deploy
+  before_script:
+    - chmod 400 $SSH_PRIVATE_KEY   
+  script:
+    - scp -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ./docker-compose.yml root@opside.alfa.pp.ua:/root/solana-vue
+    - ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY root@opside.alfa.pp.ua "
+        docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY && 
+        export IMAGE_NAME=$CI_REGISTRY_IMAGE &&
+        export IMAGE_TAG=$IMAGE_TAG &&
+        cd solana-vue &&
+        docker-compose down && 
+        docker-compose up -d &&
+        echo 777
+        "
+  environment:
+    name: development
+    url: http://opside.alfa.pp.ua:8081
