@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 
 // import { useWallet } from 'solana-wallets-vue';
-import { Connection, clusterApiUrl, Keypair, SystemProgram, Transaction, PublicKey, LAMPORTS_PER_SOL  } from '@solana/web3.js';
+import { Transaction, PublicKey  } from '@solana/web3.js';
 // import { TOKEN_PROGRAM_ID,  MINT_SIZE, getMinimumBalanceForRentExemptMint, createInitializeMint2Instruction } from "@solana/spl-token";
 import Btn from '../global/Btn.vue';
 import TextInputField from '../global/TextInputField.vue';
@@ -16,8 +16,6 @@ import { splConstructMetadata } from '../../solana/spl/utils';
 import { createTransfer } from '../../solana/system/create_transfer';
 import { initConnection, sendAndConfirmTransaction } from '../../solana/utils';
 import { piniataUploadFile, piniataUploadJson } from '../../libs/pinata';
-
-import axios from 'axios';
 
 let address = ref("");
 let loading_send_sol = ref(false);

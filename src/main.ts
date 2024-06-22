@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import VueRouter, { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import Vue3Toastify, {type ToastContainerOptions} from 'vue3-toastify'
 import { createPinia } from 'pinia'
 import './style.css'

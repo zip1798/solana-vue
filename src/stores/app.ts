@@ -1,12 +1,11 @@
 import { defineStore } from "pinia";
-import { CONFIG } from "../../config"
 
 export const useAppStore = defineStore("app", {
   
   state: () => ({
     token: '',
     chainId: '',
-    messages: [] as IMessage[],
+    messages: [] as String[],
     counter: 0
   }),
 
@@ -14,7 +13,7 @@ export const useAppStore = defineStore("app", {
     getCount: (state) => { return state.counter },
     
     isCurrentChain: state => {
-        return state.chainId === CONFIG.NETWORK_ID;
+        return state.chainId === '';
     }
   }, 
 
@@ -22,14 +21,14 @@ export const useAppStore = defineStore("app", {
     increment() {
       this.counter++;
     },
-
+/*
     addMessage(type: string, title: string, body: string) {
         const id = '' + (new Date()).getTime();
-        this.messages.push({ id, title, body, type });
+        // this.messages.push({ id, title, body, type });
     },
 
     removeMessage(id: string) {
-        this.messages = this.messages.filter(message => message.id !== id);
+        // this.messages = this.messages.filter(message => message.id !== id);
     },
 
     saveToken(token: string) {
@@ -44,9 +43,9 @@ export const useAppStore = defineStore("app", {
 
     showError(code: string, text: string) {
         const id = '' + (new Date()).getTime();
-        this.messages.push({ id, title: 'Error: ' + code, body: text, type: 'error' });
+        // this.messages.push({ id, title: 'Error: ' + code, body: text, type: 'error' });
     }
-
+//*/
 
   }
 });
