@@ -11,11 +11,14 @@ import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 // import { SOLANA_NETWORK } from '../../settings';
 
-import { splCreateMintAccount, splSetMetadata } from '../../solana/spl/create_mint_account';
+import { splCreateMintAccount, splSetMetadata, mintToken, 
+  getTokenAccount, createTokenAccount, getTokenBalance } from '../../solana/spl/create_mint_account';
 import { splConstructMetadata } from '../../solana/spl/utils';
 import { createTransfer } from '../../solana/system/create_transfer';
 import { initConnection, sendAndConfirmTransaction } from '../../solana/utils';
 import { piniataUploadFile, piniataUploadJson } from '../../libs/pinata';
+
+const MINOR_UNITS_PER_MAJOR_UNITS = Math.pow(10, 2);
 
 let address = ref("");
 let loading_send_sol = ref(false);
@@ -36,6 +39,11 @@ let isValidDecimals = ref(true);
 
 let mintAddress = ref("");
 let uploadedFile = ref("");
+
+let splAmount = ref("100");
+let isValidSplAmount = ref(true);
+let loading_send_spl = ref(false);
+let loading_balanace = ref(false);
 
 const fileInput = ref<HTMLInputElement | null>(null)
 const files = ref()
@@ -67,6 +75,43 @@ async function sendSomeSol() {
   }
   address.value = "";
   loading_send_sol.value = false;
+}
+
+async function sendSomeSpl() {
+  try {
+    const { connection, publicKey } = initConnection();
+    
+    const transaction = new Transaction();
+    let tokenAccount: PublicKey;
+    try {
+      tokenAccount = await getTokenAccount(connection, new PublicKey(mintAddress.value), new PublicKey(address.value));
+    } catch (error) {
+      tokenAccount = await createTokenAccount(transaction, new PublicKey(mintAddress.value), publicKey, new PublicKey(address.value));
+    }
+    console.log(tokenAccount.toBase58());
+    await mintToken(transaction, new PublicKey(mintAddress.value), publicKey, tokenAccount, Number(splAmount.value)*MINOR_UNITS_PER_MAJOR_UNITS);
+    
+    loading_send_spl.value = true;
+    await sendAndConfirmTransaction(connection, transaction);
+    
+    toast.success('SPL sent');
+  } catch(error) {
+    toast.error(String(error))
+  }
+  loading_send_spl.value = false;
+}
+
+async function getBalalanceSpl() {
+  const { connection, publicKey } = initConnection();
+  try {
+      const tokenBalance  = await getTokenBalance(connection, new PublicKey(mintAddress.value), new PublicKey(address.value));
+      const amount = Number(tokenBalance) / MINOR_UNITS_PER_MAJOR_UNITS
+      console.log(amount);
+      toast.info(String(`Balance ${amount} Tokens`))
+    } catch (error) {
+      toast.info(String('Balance 0.00 Tokens'))
+    }
+  
 }
 
 function isValidMintForm(): boolean {
@@ -197,6 +242,35 @@ async function uploadJson() {
     </div>
   </div>
   
+  <!-- Send some spl token -->
+  <div class="bg-white shadow sm:rounded-lg my-8">
+    <div class="px-4 py-5 sm:p-6">
+      <h3 class="text-lg font-medium leading-6 text-gray-900">Send some SPL token {{ mintAddress }}</h3>
+      <div class="mt-2 max-w-xl text-sm text-gray-500">
+        <p></p>
+      </div>
+      <form class="mt-5 ">
+        <div class="w-full sm:max-w-xs">
+          <label for="address" class="sr-only">Destination Solana Address</label>
+          <input v-model="address" type="text" name="address" id="address" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="solana address" />
+        </div>
+
+        <div class="my-4">
+        <TextInputField 
+          v-model="splAmount" 
+          id="splAmount"
+          name="splAmount"
+          title="Amount of SPL tokens" 
+          :is-valid="isValidSplAmount" 
+          text-error="Not a valid amount." />
+        </div>
+
+        <btn :loading="loading_send_spl" @click="sendSomeSpl" class="ml-3" >Send </btn>
+        <btn :loading="loading_balanace" @click="getBalalanceSpl" class="ml-3" >Get Spl Balance </btn>
+
+      </form>
+    </div>
+  </div>
   
   
   <!-- Send some sol-->
