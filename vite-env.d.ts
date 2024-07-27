@@ -4,6 +4,7 @@ interface ImportMetaEnv {
   readonly VITE_PINATA_GATEWAY: string
   readonly VITE_PINATA_API_KEY: string
   readonly VITE_PINATA_API_SECRET: string
+  readonly VITE_COUNTER_ID: string
   // more env variables...
   }
   

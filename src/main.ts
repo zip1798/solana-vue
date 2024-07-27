@@ -32,8 +32,8 @@ createApp(App)
   .use(pinia)
   .use(router)
   .use(Vue3Toastify, {
-    autoClose: 3000,
-    closeOnClick: true,
+    // autoClose: 3000,
+    closeOnClick: false,
   } as ToastContainerOptions)
   .use(SolanaWallets, walletOptions)
   .mount("#app");

@@ -1,4 +1,4 @@
-import { useWallet } from 'solana-wallets-vue';
+import { useWallet, useAnchorWallet } from 'solana-wallets-vue';
 import { Connection, clusterApiUrl, Transaction} from '@solana/web3.js';
 import { SOLANA_NETWORK } from '../settings';
 
