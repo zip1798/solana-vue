@@ -21,25 +21,7 @@ import Btn from '../global/Btn.vue';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 
-import idl from "../../idl/anchor_counter.json";
-import { useWallet, useAnchorWallet } from 'solana-wallets-vue';
-import { 
-    Connection, 
-    clusterApiUrl,
-    PublicKey, 
-    Transaction
-} from '@solana/web3.js';
-import { SOLANA_NETWORK } from '../../settings';
-import { initConnection, sendAndConfirmTransaction } from '../../solana/utils';
-
-
-import {
-    Program,
-    Idl,
-    AnchorProvider,
-    setProvider,
-    web3,
-} from "@coral-xyz/anchor"
+import * as CounterProgram from '../../solana/anchor/counter';
 
 
 let loading_initialize = ref(false);
@@ -47,32 +29,12 @@ let loading_initialize = ref(false);
 
 async function initialize() {
   try {
-    const connection = new Connection(clusterApiUrl(SOLANA_NETWORK))
-    const anchorWallet = useAnchorWallet();
-
-    //@ts-ignore
-    const provider = new AnchorProvider(connection, anchorWallet.value, {});
-    setProvider(provider)
-
-    // const programId = new PublicKey(import.meta.env.VITE_COUNTER_ID);
-
-    const program = new Program(idl as Idl);
-
-    const newAccount = web3.Keypair.generate();
-
-    //@ts-ignore
-    console.log('anchorWallet', anchorWallet.value.publicKey.toBase58())
+    const newAccount = CounterProgram.generateNewKeypair();
 
     loading_initialize.value = true
-    const sig = await program.methods
-        .initialize()
-        .accounts({
-            counter: newAccount.publicKey,
-        })
-        .signers([newAccount])
-        .rpc()
-    console.log(sig)    
-    toast.success(sig);
+    const result = await CounterProgram.initialize(newAccount)
+    console.log(result)    
+    toast.success(result.txSig);
     
   } catch(error) {
     toast.error(String(error))
