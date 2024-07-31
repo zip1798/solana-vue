@@ -9,7 +9,7 @@
             </div>
             <div class="hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8">
               <router-link
-              v-for="item in routes" 
+              v-for="item in list" 
                 :key="item.name" 
                 :to="item.path"
                 custom
@@ -23,13 +23,13 @@
             
             <wallet-multi-button></wallet-multi-button>
 
-            <button type="button" class="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+            <button v-if="is_show_user_navigation" type="button" class="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
               <span class="sr-only">View notifications</span>
               <BellIcon class="h-6 w-6" aria-hidden="true" />
             </button>
 
             <!-- Profile dropdown -->
-            <Menu as="div" class="relative ml-3">
+            <Menu  v-if="is_show_user_navigation" as="div" class="relative ml-3">
               <div>
                 <MenuButton class="flex max-w-xs items-center rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                   <span class="sr-only">Open user menu</span>
@@ -59,7 +59,7 @@
       <DisclosurePanel class="sm:hidden">
         <div class="space-y-1 pt-2 pb-3">
             <router-link
-              v-for="item in routes" 
+              v-for="item in list" 
                 :key="item.name" 
                 :to="item.path"
                 custom
@@ -71,7 +71,7 @@
         <div class="border-t border-gray-200 pt-4 pb-3 pl-4">
             <wallet-multi-button></wallet-multi-button>
         </div>
-        <div class="border-t border-gray-200 pt-4 pb-3">
+        <div v-if="is_show_user_navigation" class="border-t border-gray-200 pt-4 pb-3">
           <div class="flex items-center px-4">
             <div class="flex-shrink-0">
               <img class="h-10 w-10 rounded-full" :src="user.imageUrl" alt="" />
@@ -95,10 +95,15 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 import { WalletMultiButton } from "solana-wallets-vue";
 import routes from '../../routes';
+
+const list = computed(() => {
+  return routes.filter(x => !x.no_menu)  
+})
 
 const user = {
   name: 'Tom Cook',
@@ -112,4 +117,7 @@ const userNavigation = [
   { name: 'Settings', href: '#' },
   { name: 'Sign out', href: '#' },
 ]
+
+const is_show_user_navigation = false
+
 </script>

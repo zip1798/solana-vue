@@ -13,3 +13,9 @@ Update package.json via --force
 ```
     "vite-plugin-node-stdlib-browser": "^0.2.1",
 ```
+
+### Tailwind components
+- https://headlessui.com/ !!! use from tailwindcss ui
+- https://daisyui.com/
+- https://tailwind.primevue.org/
+- https://www.vue-tailwind.com/
