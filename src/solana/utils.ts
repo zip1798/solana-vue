@@ -15,4 +15,6 @@ export async function sendAndConfirmTransaction(connection: Connection, transact
     const { sendTransaction } = useWallet();
     const signature = await sendTransaction(transaction, connection, options);
     await connection.confirmTransaction(signature, 'confirmed');
+
+    return signature;
 }

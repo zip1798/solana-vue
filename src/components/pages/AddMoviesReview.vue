@@ -50,6 +50,10 @@
 import { ref } from 'vue'
 import Btn from '../global/Btn.vue';
 import TextInputField from '../global/TextInputField.vue';
+import { createMovieReview } from '../../solana/system/movie_review';
+
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
 
 let title = ref("");
 let description = ref("");
@@ -67,7 +71,14 @@ const ratingOptions = [
 ]
 
 async function sendTx() {
-
+  try {
+    loading_send_tx.value = true;
+    const txid = await createMovieReview(title.value, description.value, parseInt(rating.value));
+    toast.success(String(txid))
+  } catch (e) {
+    toast.error(String(e))
+  }
+  loading_send_tx.value = false;
 } 
 
 </script>
