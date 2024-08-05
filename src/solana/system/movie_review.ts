@@ -42,15 +42,57 @@ function prepareInstruction(buffer: Buffer, pda: PublicKey, publicKey: PublicKey
     })
 }
 
-export async function loadMovieReviews() {
-    const { connection, publicKey } = initConnection();
+export class MovieRepository {
+
+    // list of all PDA accounts PublicKey of this program
+    static accounts: PublicKey[] = [];
+
+    // init of list of PDA accounts
+    static async prefechAccounts() {
+        const { connection } = initConnection()
+        const accounts = await connection.getProgramAccounts(
+            new PublicKey(MOVIE_REVIEW_PROGRAM_ID),
+            {
+                dataSlice: { offset: 0, length: 0}
+            }
+        )
+
+        this.accounts = accounts.map( account => account.pubkey)
+    }
+
+    static async fetchPage(page: number, perPage: number): Promise<(Movie|null)[]> {
+        if (this.accounts.length === 0) {
+            await this.prefechAccounts()
+        }
+
+        const paginatedPublicKeys = this.accounts.slice((page - 1) * perPage, page * perPage)
+        if (paginatedPublicKeys.length === 0) {
+            return []
+        }
+
+        const { connection } = initConnection()
+        const accounts = await connection.getMultipleAccountsInfo(paginatedPublicKeys)
+
+        let movies: (Movie|null)[] = [];
+        accounts.forEach((account) => {
+            const movie: (Movie | null) = Movie.deserialize(account?.data as Buffer)
+            if (movie) {
+                movies.push(movie)
+            }
+        })
+
+        return movies
+    }
     
-    if (!publicKey) throw new Error('No wallet found');
+    static async loadMovieReviews() {
+        const { connection } = initConnection();
+    
+        const accounts = await connection.getParsedProgramAccounts(new PublicKey(MOVIE_REVIEW_PROGRAM_ID));
+        const movies = accounts.map(({account}) => {
+            return Movie.deserialize(account.data as Buffer)
+        });
+    
+        return movies
+    }
 
-    const accounts = await connection.getParsedProgramAccounts(new PublicKey(MOVIE_REVIEW_PROGRAM_ID));
-    const movies = accounts.map(({account}) => {
-        return Movie.deserialize(account.data as Buffer)
-    });
-
-    return movies
 }
