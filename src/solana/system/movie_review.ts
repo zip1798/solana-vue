@@ -58,6 +58,8 @@ export class MovieRepository {
         )
 
         this.accounts = accounts.map( account => account.pubkey)
+        
+        return this.accounts
     }
 
     static async fetchPage(page: number, perPage: number): Promise<(Movie|null)[]> {
