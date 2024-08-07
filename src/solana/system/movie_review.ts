@@ -2,6 +2,7 @@ import { Transaction, PublicKey, TransactionInstruction, SystemProgram } from '@
 import { Movie } from '../../models/Movie';
 import { initConnection, sendAndConfirmTransaction } from '../utils';
 import { MOVIE_REVIEW_PROGRAM_ID, SOLANA_NETWORK } from '../../settings';
+import bs58 from 'bs58';
 
 export async function createMovieReview(title: string, description: string, rating: number) {
     const movie = new Movie(title, rating, description);
@@ -48,18 +49,50 @@ export class MovieRepository {
     static accounts: PublicKey[] = [];
 
     // init of list of PDA accounts
-    static async prefechAccounts() {
+    static async prefechAccounts(search: string = '') {
         const { connection } = initConnection()
         const accounts = await connection.getProgramAccounts(
             new PublicKey(MOVIE_REVIEW_PROGRAM_ID),
-            {
-                dataSlice: { offset: 0, length: 0}
-            }
+            this.prepareFetchAccountOptions(search)
         )
 
-        this.accounts = accounts.map( account => account.pubkey)
+        // accounts.sort( (a, b) => {
+        //     const lengthA = a.account.data.readUInt32LE(0)
+        //     const lengthB = b.account.data.readUInt32LE(0)
+        //     const dataA = a.account.data.slice(4, 4 + lengthA)
+        //     const dataB = b.account.data.slice(4, 4 + lengthB)
+        //     return dataA.compare(dataB)
+        // })
+
+        console.log(accounts)
+        this.accounts =  accounts.map( account => account.pubkey)
         
         return this.accounts
+    }
+
+    static prepareFetchAccountOptions(search: string = '') {
+        if (search === '') {
+            return {
+                dataSlice: { offset: 0, length: 0}
+            }
+        }
+
+        return {
+            dataSlice: { offset: 2, length: 18 },
+            filters: [
+                { 
+                    memcmp: { 
+                        offset: 6, 
+                        bytes: bs58.encode(Buffer.from(search)) 
+                    } 
+                }
+            ]
+        }
+    }
+
+    static accountSort(accounts: PublicKey[]): PublicKey[] {
+
+        return accounts
     }
 
     static async fetchPage(page: number, perPage: number): Promise<(Movie|null)[]> {

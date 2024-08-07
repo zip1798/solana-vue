@@ -7,9 +7,19 @@
         <btn @click="navigate" :href="href" class="ml-3 mt-5" >Add Moview Review</btn>
 
     </router-link>
-    
-    <btn @click="load" class="ml-3 mt-5" >Load</btn>
 
+    <div class="mx-5 my-5">
+        <TextInputField 
+            v-model="search" 
+            id="search"
+            name="search"
+            title="Search" 
+            :is-valid="isValidSearch"
+            text-error="Not a valid search." />
+        <btn @click="goSearch" class="mt-5" >Search</btn>
+    </div>
+    
+    <!-- btn @click="load" class="ml-3 mt-5" >Load</btn -->
     <!-- MovieCard v-for="movie in list" :key="movie.title" :movie="movie"></MovieCard -->
     
     <template v-for="movie in movies" :key="movie?.title">
@@ -29,6 +39,7 @@
 <script setup lang="ts">
 import Btn from '../global/Btn.vue';
 import Paginator from '../global/Paginator.vue';
+import TextInputField from '../global/TextInputField.vue';
 import { Movie } from '../../models/Movie';
 import MovieCard from '../movie/movie.vue'
 import { MovieRepository } from '../../solana/system/movie_review';
@@ -38,15 +49,16 @@ import 'vue3-toastify/dist/index.css';
 
 let movies = ref<(Movie|null)[]>([]);
 
-const page = ref(1);
-const totalPages = ref(1);
-const recordsPerPage = ref(10);
+const page = ref(1)
+const totalPages = ref(1)
+const recordsPerPage = ref(10)
+const search = ref('')
+const isValidSearch = ref(true)
 
 onMounted(async () => {
     setTimeout(async () => {
-        const accounts = await MovieRepository.prefechAccounts()
-        totalPages.value = Math.ceil(accounts.length / recordsPerPage.value)
-        movies.value = await MovieRepository.fetchPage(page.value, recordsPerPage.value)    
+        await MovieRepository.prefechAccounts()
+        await fetchAccounts()
     }, 1000)
 })
 
@@ -77,6 +89,18 @@ async function next() {
 
 async function goToPage(pg: number) {
   page.value = pg
+}
+
+async function goSearch() {
+    // toast.info(search.value)
+    await MovieRepository.prefechAccounts(search.value)
+    await fetchAccounts()
+}
+
+async function fetchAccounts() {
+    page.value = 1
+    totalPages.value = Math.ceil(MovieRepository.accounts.length / recordsPerPage.value)
+    movies.value = await MovieRepository.fetchPage(page.value, recordsPerPage.value)    
 }
 
 
